@@ -1,0 +1,14 @@
+version: v2
+clean: true
+plugins:
+  - remote: buf.build/bufbuild/validate-go:v1.2.1
+    out: proto/gen
+    opt: paths=source_relative
+  - local: protoc-gen-go
+    out: proto/gen
+    opt: paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: proto/gen
+    opt: paths=source_relative
+inputs:
+  - directory: proto
