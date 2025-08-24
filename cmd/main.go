@@ -2,6 +2,7 @@ package main
 
 import (
 	"queue-service/bootstrap"
+	"queue-service/infrastructure/grpc_client"
 	"queue-service/infrastructure/handler_mail"
 	pkglog "queue-service/infrastructure/service/logger"
 
@@ -14,13 +15,22 @@ func main() {
 	bootstrap.NewEnv(&env)
 	logConfig := pkglog.NewConfig()
 	log := pkglog.InitLogger(logConfig, zapcore.DebugLevel, env.IsProduction())
-	db := bootstrap.NewPostgresDB(&env, log)
-	defer db.Close()
+	clientConfig := []*grpc_client.Config{}
+	for name, client := range env.GRPC_CLIENTS {
+		clientConfig = append(clientConfig, &grpc_client.Config{
+			Name:          name,
+			ServerAddress: client.ServerAddress,
+			Timeout:       client.Timeout,
+			MaxRetries:    client.MaxRetries,
+			KeepAlive:     client.KeepAlive,
+		})
+	}
+	clientFactory := grpc_client.NewClientFactory(clientConfig...)
+	mailService := grpc_client.NewMailService(clientFactory.GetClient("mail_service"))
 	cf := asynq.Config{
 		Concurrency: env.QUEUE.Concurrency,
 		Queues:      env.QUEUE.Queues,
 	}
-
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{
 			Addr:     env.QUEUE.Addr,
@@ -31,10 +41,9 @@ func main() {
 		cf,
 	)
 	mux := asynq.NewServeMux()
-	// Register tasks and handlers
-	handler_mail.NewEmailHandler(mux, &env, log, db)
+	handler_mail.NewEmailHandler(mux, &env, log, mailService)
 
 	if err := srv.Run(mux); err != nil {
-		log.Fatal("Could not run server: " + err.Error())
+		log.Fatal("Không thể khởi động máy chủ: " + err.Error())
 	}
 }

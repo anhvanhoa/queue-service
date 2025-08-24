@@ -6,11 +6,9 @@ import (
 	"queue-service/constants"
 	loggerI "queue-service/domain/service/logger"
 	"queue-service/domain/usecase"
-	"queue-service/infrastructure/repo"
 	"queue-service/infrastructure/service/mail"
 	mailtpl "queue-service/infrastructure/service/mail_tpl"
 
-	"github.com/go-pg/pg/v10"
 	"github.com/hibiken/asynq"
 )
 
@@ -26,15 +24,14 @@ func NewEmailHandler(
 	mux *asynq.ServeMux,
 	env *bootstrap.Env,
 	log loggerI.Log,
-	db *pg.DB,
+	mailService usecase.MailService,
 ) {
 	var mailS = usecase.NewEmailSystem(
 		log,
 		mailtpl.NewMailTemplate(),
 		mail.NewMailProvider(),
-		repo.NewMailTemplateRepository(db),
-		repo.NewMailProviderRepository(db),
-		[]string{"anhnguyen.xmg@xuanmaijsc.vn"}, // Danh sách email dùng để test
+		mailService,
+		[]string{"anhnguyen.xmg@xuanmaijsc.vn"},
 	)
 	mailS.ConfigTest().SetIsProduction(env.IsProduction())
 	mux.Handle(string(constants.QUEUE_MAIL), &MailHandler{mailS})

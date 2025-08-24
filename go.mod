@@ -1,6 +1,6 @@
 module queue-service
 
-go 1.23.0
+go 1.24.6
 
 require (
 	github.com/cbroglie/mustache v1.4.0
@@ -16,6 +16,7 @@ require (
 )
 
 require (
+	github.com/anhvanhoa/sf-proto v1.1.1 // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	github.com/onsi/gomega v1.15.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect

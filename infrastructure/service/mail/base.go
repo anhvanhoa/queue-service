@@ -43,7 +43,7 @@ func (m *mailProvider) SetProvider(cf *mailI.ConfigMail) mailI.MailProvider {
 
 	provider, err := mail.NewClient(cf.Host, opts...)
 	if err != nil {
-		log.Fatalf("Failed to create mail provider: %v", err)
+		log.Fatalf("Không thể tạo nhà cung cấp email: %v", err)
 	}
 	m.provider = provider
 	m.config = cf

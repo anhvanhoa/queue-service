@@ -158,9 +158,9 @@ func (l *log) LogGRPC(ctx context.Context, method string, req any, resp any, err
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
-		l.Logger.Error("gRPC call completed with error", fields...)
+		l.Logger.Error("Cuộc gọi gRPC hoàn thành với lỗi", fields...)
 	} else {
-		l.Logger.Info("gRPC call completed successfully", fields...)
+		l.Logger.Info("Cuộc gọi gRPC hoàn thành thành công", fields...)
 	}
 }
 
@@ -176,7 +176,7 @@ func (l *log) LogGRPCRequest(ctx context.Context, method string, req any) {
 		fields = append(fields, zap.Time("deadline", deadline))
 	}
 
-	l.Logger.Info("gRPC request received", fields...)
+	l.Logger.Info("Đã nhận yêu cầu gRPC", fields...)
 }
 
 func (l *log) LogGRPCResponse(ctx context.Context, method string, resp any, err error, duration time.Duration) {
@@ -200,9 +200,9 @@ func (l *log) LogGRPCResponse(ctx context.Context, method string, resp any, err 
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
-		l.Logger.Error("gRPC response sent with error", fields...)
+		l.Logger.Error("Phản hồi gRPC được gửi với lỗi", fields...)
 	} else {
-		l.Logger.Info("gRPC response sent successfully", fields...)
+		l.Logger.Info("Phản hồi gRPC được gửi thành công", fields...)
 	}
 }
 

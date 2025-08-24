@@ -1,3 +1,5 @@
+github.com/anhvanhoa/sf-proto v1.1.1 h1:vQsd2hmCtUs4n472I6prOG5tOcltQnPCWxNov/E4G5w=
+github.com/anhvanhoa/sf-proto v1.1.1/go.mod h1:CQ7MbEu4NIiPPbidqNJuvHegDs3kq1L8klTBnZxma3w=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=
 github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdbAV9g4c=
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=
