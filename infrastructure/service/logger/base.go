@@ -34,7 +34,6 @@ func NewConfig() *lumberjack.Logger {
 	}
 }
 
-// InitLogger thiết lập Logger với Lumberjack và Zap
 func InitLogger(config *lumberjack.Logger, logLevel zapcore.Level, logFile bool) logger.Log {
 	encoderConfig := zapcore.EncoderConfig{
 		LevelKey:         "level",
@@ -42,15 +41,14 @@ func InitLogger(config *lumberjack.Logger, logLevel zapcore.Level, logFile bool)
 		CallerKey:        "caller",
 		TimeKey:          "time",
 		LineEnding:       zapcore.DefaultLineEnding,
-		EncodeTime:       zapcore.ISO8601TimeEncoder, // Format thời gian
-		EncodeCaller:     zapcore.ShortCallerEncoder, // Hiển thị file.go:line
+		EncodeTime:       zapcore.ISO8601TimeEncoder,
+		EncodeCaller:     zapcore.ShortCallerEncoder,
 		EncodeLevel:      zapcore.CapitalLevelEncoder,
 		ConsoleSeparator: " | ",
 	}
 
 	var coreLogs []zapcore.Core
 
-	// Nếu log ra file thì thêm vào coreLogs
 	if logFile {
 		configFile := encoderConfig
 		fileEncoder := zapcore.NewJSONEncoder(configFile)
@@ -64,7 +62,6 @@ func InitLogger(config *lumberjack.Logger, logLevel zapcore.Level, logFile bool)
 	consoleWriter := zapcore.Lock(os.Stdout)
 	coreLogs = append(coreLogs, zapcore.NewCore(consoleEncoder, consoleWriter, logLevel))
 
-	// Kết hợp nhiều writer
 	core := zapcore.NewTee(coreLogs...)
 
 	return &log{
@@ -79,55 +76,41 @@ func InitLogger(config *lumberjack.Logger, logLevel zapcore.Level, logFile bool)
 
 func convertToZapFields(fields ...any) []zap.Field {
 	var zapFields []zap.Field
-	for i := 0; i < len(fields)-1; i += 2 {
+	for i := 0; i <= len(fields)-1; i += 1 {
 		key, ok := fields[i].(string)
-		if !ok {
-			continue // bỏ qua nếu key không phải string
+		if ok {
+			zapFields = append(zapFields, zap.Any(key, fields[i]))
 		}
-		value := fields[i+1]
-		zapFields = append(zapFields, zap.Any(key, value))
+		field, ok := fields[i].(zap.Field)
+		if ok {
+			zapFields = append(zapFields, field)
+		}
 	}
 	return zapFields
 }
 
-// Các hàm tiện ích
 func (l *log) Info(msg string, fields ...any) {
 	zapFields := convertToZapFields(fields...)
-	if len(zapFields) > 0 {
-		zapFields = append(zapFields, zap.String("info", msg))
-	}
 	l.Logger.Info(msg, zapFields...)
 }
 
 func (l *log) Debug(msg string, fields ...any) {
 	zapFields := convertToZapFields(fields...)
-	if len(zapFields) > 0 {
-		zapFields = append(zapFields, zap.String("debug", msg))
-	}
 	l.Logger.Debug(msg, zapFields...)
 }
 
 func (l *log) Warn(msg string, fields ...any) {
 	zapFields := convertToZapFields(fields...)
-	if len(zapFields) > 0 {
-		zapFields = append(zapFields, zap.String("warning", msg))
-	}
 	l.Logger.Warn(msg, zapFields...)
 }
 
 func (l *log) Error(msg string, fields ...any) {
 	zapFields := convertToZapFields(fields...)
-	if len(zapFields) > 0 {
-		zapFields = append(zapFields, zap.String("error", msg))
-	}
 	l.Logger.Error(msg, zapFields...)
 }
 
 func (l *log) Fatal(msg string, fields ...any) {
 	zapFields := convertToZapFields(fields...)
-	if len(zapFields) > 0 {
-		zapFields = append(zapFields, zap.String("fatal", msg))
-	}
 	l.Logger.Fatal(msg, zapFields...)
 }
 

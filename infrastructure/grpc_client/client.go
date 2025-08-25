@@ -2,6 +2,7 @@ package grpc_client
 
 import (
 	"fmt"
+	loggerI "queue-service/domain/service/logger"
 	"time"
 
 	"google.golang.org/grpc"
@@ -12,6 +13,7 @@ import (
 type Client struct {
 	conn   *grpc.ClientConn
 	config *Config
+	log    loggerI.Log
 }
 
 type Config struct {
@@ -22,7 +24,7 @@ type Config struct {
 	KeepAlive     *keepalive.ClientParameters
 }
 
-func NewClient(config *Config) (*Client, error) {
+func NewClient(config *Config, log loggerI.Log) (*Client, error) {
 	if config == nil {
 		config = &Config{
 			ServerAddress: "localhost:50051",
@@ -49,6 +51,7 @@ func NewClient(config *Config) (*Client, error) {
 	return &Client{
 		conn:   conn,
 		config: config,
+		log:    log,
 	}, nil
 }
 
@@ -64,6 +67,6 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) IsConnected() bool {
-	fmt.Println("Trạng thái kết nối: ", c.conn.GetState().String())
+	c.log.Info(fmt.Sprintf("Trạng thái kết nối: %s", c.conn.GetState().String()))
 	return c.conn != nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"queue-service/bootstrap"
+	"queue-service/constants"
 	"queue-service/infrastructure/grpc_client"
 	"queue-service/infrastructure/handler_mail"
 	pkglog "queue-service/infrastructure/service/logger"
@@ -25,8 +26,8 @@ func main() {
 			KeepAlive:     client.KeepAlive,
 		})
 	}
-	clientFactory := grpc_client.NewClientFactory(clientConfig...)
-	mailService := grpc_client.NewMailService(clientFactory.GetClient("mail_service"))
+	clientFactory := grpc_client.NewClientFactory(log, clientConfig...)
+	mailService := grpc_client.NewMailService(clientFactory.GetClient(constants.MailService))
 	cf := asynq.Config{
 		Concurrency: env.QUEUE.Concurrency,
 		Queues:      env.QUEUE.Queues,

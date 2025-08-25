@@ -2,17 +2,22 @@ package grpc_client
 
 import (
 	"fmt"
+	loggerI "queue-service/domain/service/logger"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 type ClientFactory struct {
 	clients map[string]*Client
 	mutex   sync.RWMutex
+	log     loggerI.Log
 }
 
-func NewClientFactory(config ...*Config) *ClientFactory {
+func NewClientFactory(log loggerI.Log, config ...*Config) *ClientFactory {
 	cf := &ClientFactory{
 		clients: make(map[string]*Client),
+		log:     log,
 	}
 	if len(config) > 0 {
 		for _, c := range config {
@@ -33,14 +38,14 @@ func (cf *ClientFactory) CreateClient(config *Config) (*Client, error) {
 		client.Close()
 	}
 
-	client, err := NewClient(config)
+	client, err := NewClient(config, cf.log)
 	if err != nil {
 		return nil, fmt.Errorf("không thể tạo client '%s': %w", config.Name, err)
 	}
 	if client.IsConnected() {
-		fmt.Printf("Kết nối thành công: %s - Host: %s\n", config.Name, client.conn.Target())
+		cf.log.Info(fmt.Sprintf("Kết nối thành công: %s", client.config.Name), zap.String("host", client.conn.Target()))
 	} else {
-		fmt.Printf("Kết nối thất bại: %s - Host: %s\n", config.Name, client.conn.Target())
+		cf.log.Error(fmt.Sprintf("Kết nối thất bại: %s", client.conn.Target()))
 	}
 	cf.clients[config.Name] = client
 	return client, nil
