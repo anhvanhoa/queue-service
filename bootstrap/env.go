@@ -4,11 +4,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"queue-service/infrastructure/grpc_client"
 	"strings"
-	"time"
 
 	"github.com/spf13/viper"
-	"google.golang.org/grpc/keepalive"
 )
 
 type queue struct {
@@ -23,18 +22,16 @@ type queue struct {
 	Queues      map[string]int `mapstructure:"queues"`
 }
 
-type GrpcClient struct {
-	ServerAddress string                      `mapstructure:"server_address"`
-	Timeout       time.Duration               `mapstructure:"timeout"`
-	MaxRetries    int                         `mapstructure:"max_retries"`
-	KeepAlive     *keepalive.ClientParameters `mapstructure:"keep_alive"`
-}
-
 type Env struct {
-	NodeEnv     string                 `mapstructure:"node_env"`
-	NameServer  string                 `mapstructure:"name_server"`
-	Queue       *queue                 `mapstructure:"queue"`
-	GrpcClients map[string]*GrpcClient `mapstructure:"grpc_clients"`
+	NodeEnv         string                `mapstructure:"node_env"`
+	NameService     string                `mapstructure:"name_service"`
+	HostGrpc        string                `mapstructure:"host_grpc"`
+	PortGrpc        int                   `mapstructure:"port_grpc"`
+	IntervalCheck   string                `mapstructure:"interval_check"`
+	TimeoutCheck    string                `mapstructure:"timeout_check"`
+	Queue           *queue                `mapstructure:"queue"`
+	MailServiceAddr string                `mapstructure:"mail_service_addr"`
+	GrpcClients     []*grpc_client.Config `mapstructure:"grpc_clients"`
 }
 
 func NewEnv(env *Env) {

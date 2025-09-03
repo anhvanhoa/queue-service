@@ -14,7 +14,7 @@ type ClientFactory struct {
 	log     loggerI.Log
 }
 
-func NewClientFactory(log loggerI.Log, config ...*Config) *ClientFactory {
+func NewClientFactory(log loggerI.Log, config []*Config) *ClientFactory {
 	cf := &ClientFactory{
 		clients: make(map[string]*Client),
 		log:     log,
@@ -31,7 +31,7 @@ func (cf *ClientFactory) CreateClient(config *Config) (*Client, error) {
 	cf.mutex.Lock()
 	defer cf.mutex.Unlock()
 
-	if client, exists := cf.clients[config.Name]; exists {
+	if client, exists := cf.clients[config.ServerAddress]; exists {
 		if client.IsConnected() {
 			return client, nil
 		}
@@ -43,18 +43,18 @@ func (cf *ClientFactory) CreateClient(config *Config) (*Client, error) {
 		return nil, fmt.Errorf("không thể tạo client '%s': %w", config.Name, err)
 	}
 	if client.IsConnected() {
-		cf.log.Info(fmt.Sprintf("Kết nối thành công: %s", client.config.Name), zap.String("host", client.conn.Target()))
+		cf.log.Info(fmt.Sprintf("Kết nối thành công: %s", client.config.ServerAddress), zap.String("host", client.conn.Target()))
 	} else {
 		cf.log.Error(fmt.Sprintf("Kết nối thất bại: %s", client.conn.Target()))
 	}
-	cf.clients[config.Name] = client
+	cf.clients[config.ServerAddress] = client
 	return client, nil
 }
 
-func (cf *ClientFactory) GetClient(name string) *Client {
+func (cf *ClientFactory) GetClient(serverAddress string) *Client {
 	cf.mutex.RLock()
 	defer cf.mutex.RUnlock()
-	return cf.clients[name]
+	return cf.clients[serverAddress]
 }
 
 func (cf *ClientFactory) CloseAll() error {
@@ -62,27 +62,27 @@ func (cf *ClientFactory) CloseAll() error {
 	defer cf.mutex.Unlock()
 
 	var lastErr error
-	for name, client := range cf.clients {
+	for serverAddress, client := range cf.clients {
 		if err := client.Close(); err != nil {
-			lastErr = fmt.Errorf("không thể đóng client '%s': %w", name, err)
+			lastErr = fmt.Errorf("không thể đóng client '%s': %w", serverAddress, err)
 		}
-		delete(cf.clients, name)
+		delete(cf.clients, serverAddress)
 	}
 
 	return lastErr
 }
 
-func (cf *ClientFactory) CloseClient(name string) error {
+func (cf *ClientFactory) CloseClient(serverAddress string) error {
 	cf.mutex.Lock()
 	defer cf.mutex.Unlock()
 
-	if client, exists := cf.clients[name]; exists {
+	if client, exists := cf.clients[serverAddress]; exists {
 		err := client.Close()
-		delete(cf.clients, name)
+		delete(cf.clients, serverAddress)
 		return err
 	}
 
-	return fmt.Errorf("không tìm thấy client '%s'", name)
+	return fmt.Errorf("không tìm thấy client '%s'", serverAddress)
 }
 
 func (cf *ClientFactory) ListClients() []string {

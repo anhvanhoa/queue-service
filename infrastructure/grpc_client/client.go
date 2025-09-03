@@ -19,7 +19,6 @@ type Client struct {
 type Config struct {
 	Name          string
 	ServerAddress string
-	Timeout       time.Duration
 	MaxRetries    int
 	KeepAlive     *keepalive.ClientParameters
 }
@@ -28,7 +27,6 @@ func NewClient(config *Config, log loggerI.Log) (*Client, error) {
 	if config == nil {
 		config = &Config{
 			ServerAddress: "localhost:50051",
-			Timeout:       30 * time.Second,
 			MaxRetries:    3,
 			KeepAlive: &keepalive.ClientParameters{
 				Time:                10 * time.Second,
