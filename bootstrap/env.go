@@ -12,29 +12,29 @@ import (
 )
 
 type queue struct {
-	Addr        string
-	DB          int
-	Password    string
-	MaxIdle     int
-	MaxActive   int
-	IdleTimeout int
-	Network     string
-	Concurrency int
-	Queues      map[string]int
+	Addr        string         `mapstructure:"addr"`
+	Db          int            `mapstructure:"db"`
+	Password    string         `mapstructure:"password"`
+	MaxIdle     int            `mapstructure:"max_idle"`
+	MaxActive   int            `mapstructure:"max_active"`
+	IdleTimeout int            `mapstructure:"idle_timeout"`
+	Network     string         `mapstructure:"network"`
+	Concurrency int            `mapstructure:"concurrency"`
+	Queues      map[string]int `mapstructure:"queues"`
 }
 
 type GrpcClient struct {
-	ServerAddress string
-	Timeout       time.Duration
-	MaxRetries    int
-	KeepAlive     *keepalive.ClientParameters
+	ServerAddress string                      `mapstructure:"server_address"`
+	Timeout       time.Duration               `mapstructure:"timeout"`
+	MaxRetries    int                         `mapstructure:"max_retries"`
+	KeepAlive     *keepalive.ClientParameters `mapstructure:"keep_alive"`
 }
 
 type Env struct {
-	MODE_ENV     string
-	NAME_APP     string
-	QUEUE        *queue
-	GRPC_CLIENTS map[string]*GrpcClient
+	NodeEnv     string                 `mapstructure:"node_env"`
+	NameServer  string                 `mapstructure:"name_server"`
+	Queue       *queue                 `mapstructure:"queue"`
+	GrpcClients map[string]*GrpcClient `mapstructure:"grpc_clients"`
 }
 
 func NewEnv(env *Env) {
@@ -63,5 +63,5 @@ func NewEnv(env *Env) {
 }
 
 func (env *Env) IsProduction() bool {
-	return strings.ToLower(env.MODE_ENV) == "production"
+	return strings.ToLower(env.NodeEnv) == "production"
 }

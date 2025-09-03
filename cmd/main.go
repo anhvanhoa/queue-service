@@ -17,7 +17,7 @@ func main() {
 	logConfig := pkglog.NewConfig()
 	log := pkglog.InitLogger(logConfig, zapcore.DebugLevel, env.IsProduction())
 	clientConfig := []*grpc_client.Config{}
-	for name, client := range env.GRPC_CLIENTS {
+	for name, client := range env.GrpcClients {
 		clientConfig = append(clientConfig, &grpc_client.Config{
 			Name:          name,
 			ServerAddress: client.ServerAddress,
@@ -29,15 +29,15 @@ func main() {
 	clientFactory := grpc_client.NewClientFactory(log, clientConfig...)
 	mailService := grpc_client.NewMailService(clientFactory.GetClient(constants.MailService))
 	cf := asynq.Config{
-		Concurrency: env.QUEUE.Concurrency,
-		Queues:      env.QUEUE.Queues,
+		Concurrency: env.Queue.Concurrency,
+		Queues:      env.Queue.Queues,
 	}
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{
-			Addr:     env.QUEUE.Addr,
-			DB:       env.QUEUE.DB,
-			Password: env.QUEUE.Password,
-			Network:  env.QUEUE.Network,
+			Addr:     env.Queue.Addr,
+			DB:       env.Queue.Db,
+			Password: env.Queue.Password,
+			Network:  env.Queue.Network,
 		},
 		cf,
 	)
