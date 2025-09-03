@@ -46,26 +46,26 @@ func NewDiscovery(log loggerI.Log, env *bootstrap.Env) (*DiscoveryImpl, error) {
 func (d *DiscoveryImpl) Register(serviceName string) error {
 	registration := new(api.AgentServiceRegistration)
 	addrs, _ := net.InterfaceAddrs()
-	serviceAddress := d.env.HOST_GRPC
+	serviceAddress := d.env.HostGrpc
 	for _, addr := range addrs {
 		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil && d.env.IsProduction() {
 			serviceAddress = ipnet.IP.String()
 		}
 	}
 	registration.Name = serviceName
-	registration.Port = d.env.PORT_GRPC
+	registration.Port = d.env.PortGrpc
 	registration.Address = serviceAddress
 	registration.Check = &api.AgentServiceCheck{
-		GRPC:     fmt.Sprintf("%s:%d", serviceAddress, d.env.PORT_GRPC),
-		Interval: d.env.INTERVAL_CHECK,
-		Timeout:  d.env.TIMEOUT_CHECK,
+		GRPC:     fmt.Sprintf("%s:%d", serviceAddress, d.env.PortGrpc),
+		Interval: d.env.IntervalCheck,
+		Timeout:  d.env.TimeoutCheck,
 	}
 
 	if err := d.client.Agent().ServiceRegister(registration); err != nil {
 		d.log.Error(fmt.Sprintf("Failed to register service: %v", err))
 		return err
 	}
-	d.log.Info(fmt.Sprintf("Service %s registered with address: %s:%d", serviceName, serviceAddress, d.env.PORT_GRPC))
+	d.log.Info(fmt.Sprintf("Service %s registered with address: %s:%d", serviceName, serviceAddress, d.env.PortGrpc))
 	return nil
 }
 

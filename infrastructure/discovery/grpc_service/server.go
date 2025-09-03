@@ -31,7 +31,7 @@ func NewGRPCServer(env *bootstrap.Env, log loggerI.Log) *GRPCServer {
 	grpc_health_v1.RegisterHealthServer(server, healthSrv)
 
 	healthSrv.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
-	healthSrv.SetServingStatus(env.NAME_SERVICE, grpc_health_v1.HealthCheckResponse_SERVING)
+	healthSrv.SetServingStatus(env.NameService, grpc_health_v1.HealthCheckResponse_SERVING)
 
 	if !env.IsProduction() {
 		log.Info("Reflection is enabled")
@@ -47,13 +47,13 @@ func NewGRPCServer(env *bootstrap.Env, log loggerI.Log) *GRPCServer {
 }
 
 func (s *GRPCServer) Start(ctx context.Context) error {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.env.PORT_GRPC))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.env.PortGrpc))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %v", err)
 	}
 
 	go func() {
-		s.log.Info(fmt.Sprintf("gRPC server starting to serve on port %d", s.env.PORT_GRPC))
+		s.log.Info(fmt.Sprintf("gRPC server starting to serve on port %d", s.env.PortGrpc))
 		if err := s.server.Serve(lis); err != nil {
 			s.log.Error(fmt.Sprintf("gRPC server failed to serve: %v", err))
 		}
