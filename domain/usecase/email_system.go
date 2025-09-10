@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"log"
 	"queue-service/constants"
 	serviceError "queue-service/domain/service/error"
 	loggerI "queue-service/domain/service/logger"
@@ -30,12 +31,10 @@ type EmailTestingImpl interface {
 	SetTestMails(mails []string) *EmailTesting
 }
 
-type Payload struct {
-	Provider string
-	Tos      *[]string
-	To       *string
-	Template string
-	Data     map[string]any
+type PayloadMail struct {
+	Data       any      `json:"data"`
+	Tos        []string `json:"tos"`
+	TemplateId string   `json:"template_id"`
 }
 
 type EmailTesting struct {
@@ -53,7 +52,7 @@ type EmailSystem struct {
 }
 
 func (e *EmailSystem) SendMailQueue(ctx context.Context, payload []byte, Id string) error {
-	var pl Payload
+	var pl PayloadMail
 	sh := &StatusHistory{
 		Status: constants.STATUS_SENT_MAIL_PENDING.String(),
 	}
@@ -64,7 +63,7 @@ func (e *EmailSystem) SendMailQueue(ctx context.Context, payload []byte, Id stri
 		e.log.Warn(sh.Message)
 		return ErrMailParseFailed
 	}
-	tpl, err := e.mailService.GetMailTemplateById(ctx, pl.Template)
+	tpl, err := e.mailService.GetMailTemplateById(ctx, pl.TemplateId)
 	if err != nil {
 		sh.Message = ErrMailTemplateNotFound.Error() + ": " + err.Error()
 		e.log.Warn(sh.Message)
@@ -77,7 +76,9 @@ func (e *EmailSystem) SendMailQueue(ctx context.Context, payload []byte, Id stri
 		return ErrMailTemplateNotFound
 	}
 
-	mailT, err := e.mailTemplate.Render(tpl.Subject, tpl.Body, pl.Data)
+	log.Println("tpl", tpl)
+
+	mailT, err := e.mailTemplate.Render(tpl.Subject, tpl.Body, pl.Data.(map[string]any))
 	if err != nil {
 		sh.Message = ErrMailTemplateNotFound.Error() + ": " + err.Error()
 		e.log.Warn(sh.Message)
@@ -85,7 +86,7 @@ func (e *EmailSystem) SendMailQueue(ctx context.Context, payload []byte, Id stri
 		return ErrMailTemplateNotFound
 	}
 
-	provider, err := e.mailService.GetMailProviderByEmail(ctx, pl.Provider)
+	provider, err := e.mailService.GetMailProviderByEmail(ctx, tpl.ProviderEmail)
 	if err != nil {
 		sh.Message = ErrMailProviderNotFound.Error() + ": " + err.Error()
 		e.log.Warn(sh.Message)
@@ -107,17 +108,12 @@ func (e *EmailSystem) SendMailQueue(ctx context.Context, payload []byte, Id stri
 		Name:     provider.Name,
 		TSL:      &tls.Config{InsecureSkipVerify: true},
 	})
-	tos := []string{}
-	if pl.To != nil {
-		tos = append(tos, *pl.To)
-	} else if pl.Tos != nil {
-		tos = *pl.Tos
-	}
+	tos := pl.Tos
 	if !e.configTest.IsProduction && len(e.configTest.TestMails) > 0 {
 		tos = e.configTest.TestMails
 	}
 
-	if err := e.mailProvider.SendMail(tos, mailT.Subject, mailT.Body, pl.Data); err != nil {
+	if err := e.mailProvider.SendMail(tos, mailT.Subject, mailT.Body, pl.Data.(map[string]any)); err != nil {
 		sh.Message = ErrMailSendFailed.Error() + ": " + err.Error()
 		e.log.Warn(sh.Message)
 		e.mailService.CreateStatusHistory(ctx, sh)
