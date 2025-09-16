@@ -39,7 +39,7 @@ func (m *MailService) CreateStatusHistory(ctx context.Context, statusHistory *us
 		Status:        statusHistory.Status,
 		MailHistoryId: statusHistory.MailHistoryId,
 		Message:       statusHistory.Message,
-		CreatedAt:     statusHistory.CreatedAt.String(),
+		CreatedAt:     statusHistory.CreatedAt.Format(time.RFC3339),
 	})
 	if err != nil {
 		return err

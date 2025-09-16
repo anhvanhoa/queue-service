@@ -4,12 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"log"
 	"queue-service/constants"
 	serviceError "queue-service/domain/service/error"
 	loggerI "queue-service/domain/service/logger"
 	"queue-service/domain/service/mail"
 	mailtpl "queue-service/domain/service/mail_tpl"
+	"time"
 )
 
 var (
@@ -54,7 +54,9 @@ type EmailSystem struct {
 func (e *EmailSystem) SendMailQueue(ctx context.Context, payload []byte, Id string) error {
 	var pl PayloadMail
 	sh := &StatusHistory{
-		Status: constants.STATUS_SENT_MAIL_PENDING.String(),
+		Status:        constants.STATUS_SENT_MAIL_PENDING.String(),
+		CreatedAt:     time.Now(),
+		MailHistoryId: Id,
 	}
 
 	if err := json.Unmarshal(payload, &pl); err != nil {
@@ -75,8 +77,6 @@ func (e *EmailSystem) SendMailQueue(ctx context.Context, payload []byte, Id stri
 		e.mailService.CreateStatusHistory(ctx, sh)
 		return ErrMailTemplateNotFound
 	}
-
-	log.Println("tpl", tpl)
 
 	mailT, err := e.mailTemplate.Render(tpl.Subject, tpl.Body, pl.Data.(map[string]any))
 	if err != nil {
