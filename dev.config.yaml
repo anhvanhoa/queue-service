@@ -1,0 +1,27 @@
+node_env: 'development'
+name_service: 'QueueService'
+port_grpc: 50054
+host_grpc: 'localhost'
+interval_check: '20s'
+timeout_check: '15s'
+
+mail_service_addr: 'localhost:50052'
+
+grpc_clients:
+    - Name: 'MailService'
+      ServerAddress: 'localhost:50052'
+      MaxRetries: 3
+      Time: 20
+      Timeout: 15
+      PermitWithoutStream: true
+      SecretInternal: 'MailServiceSecret'
+
+queue:
+    addr: 'localhost:6379'
+    db: 0
+    password: ''
+    network: 'tcp'
+    max_idle: 100
+    max_active: 100
+    idle_timeout: 240
+    concurrency: 10

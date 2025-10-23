@@ -4,11 +4,10 @@ import (
 	"context"
 	"queue-service/bootstrap"
 	"queue-service/constants"
-	loggerI "queue-service/domain/service/logger"
 	"queue-service/domain/usecase"
-	"queue-service/infrastructure/service/mail"
-	mailtpl "queue-service/infrastructure/service/mail_tpl"
 
+	"github.com/anhvanhoa/service-core/domain/log"
+	"github.com/anhvanhoa/service-core/domain/mail"
 	"github.com/hibiken/asynq"
 )
 
@@ -23,12 +22,12 @@ func (e *MailHandler) ProcessTask(ctx context.Context, task *asynq.Task) error {
 func NewEmailHandler(
 	mux *asynq.ServeMux,
 	env *bootstrap.Env,
-	log loggerI.Log,
+	log log.Logger,
 	mailService usecase.MailService,
 ) {
 	var mailS = usecase.NewEmailSystem(
 		log,
-		mailtpl.NewMailTemplate(),
+		mail.NewMailTemplate(),
 		mail.NewMailProvider(),
 		mailService,
 		[]string{"anhnguyen.xmg@xuanmaijsc.vn"},

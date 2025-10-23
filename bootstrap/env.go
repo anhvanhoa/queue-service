@@ -4,8 +4,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"queue-service/infrastructure/grpc_client"
 	"strings"
+
+	"github.com/anhvanhoa/service-core/domain/grpc_client"
 
 	"github.com/spf13/viper"
 )
@@ -23,15 +24,15 @@ type queue struct {
 }
 
 type Env struct {
-	NodeEnv         string                `mapstructure:"node_env"`
-	NameService     string                `mapstructure:"name_service"`
-	HostGrpc        string                `mapstructure:"host_grpc"`
-	PortGrpc        int                   `mapstructure:"port_grpc"`
-	IntervalCheck   string                `mapstructure:"interval_check"`
-	TimeoutCheck    string                `mapstructure:"timeout_check"`
-	Queue           *queue                `mapstructure:"queue"`
-	MailServiceAddr string                `mapstructure:"mail_service_addr"`
-	GrpcClients     []*grpc_client.Config `mapstructure:"grpc_clients"`
+	NodeEnv         string                    `mapstructure:"node_env"`
+	NameService     string                    `mapstructure:"name_service"`
+	HostGrpc        string                    `mapstructure:"host_grpc"`
+	PortGrpc        int                       `mapstructure:"port_grpc"`
+	IntervalCheck   string                    `mapstructure:"interval_check"`
+	TimeoutCheck    string                    `mapstructure:"timeout_check"`
+	Queue           *queue                    `mapstructure:"queue"`
+	MailServiceAddr string                    `mapstructure:"mail_service_addr"`
+	GrpcClients     []*grpc_client.ConfigGrpc `mapstructure:"grpc_clients"`
 }
 
 func NewEnv(env *Env) {

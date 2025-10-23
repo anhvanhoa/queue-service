@@ -5,19 +5,19 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"queue-service/constants"
-	serviceError "queue-service/domain/service/error"
-	loggerI "queue-service/domain/service/logger"
-	"queue-service/domain/service/mail"
-	mailtpl "queue-service/domain/service/mail_tpl"
 	"time"
+
+	"github.com/anhvanhoa/service-core/domain/log"
+	"github.com/anhvanhoa/service-core/domain/mail"
+	"github.com/anhvanhoa/service-core/domain/oops"
 )
 
 var (
-	ErrMailTemplateNotFound    = serviceError.NewErr("Không tìm thấy mẫu email")
-	ErrMailProviderNotFound    = serviceError.NewErr("Không tìm thấy cấu hình gửi email")
-	ErrMailSendFailed          = serviceError.NewErr("Không thể gửi email")
-	ErrMailUpdateHistoryFailed = serviceError.NewErr("Không thể cập nhật lịch sử email")
-	ErrMailParseFailed         = serviceError.NewErr("Không thể phân tích dữ liệu payload")
+	ErrMailTemplateNotFound    = oops.New("Không tìm thấy mẫu email")
+	ErrMailProviderNotFound    = oops.New("Không tìm thấy cấu hình gửi email")
+	ErrMailSendFailed          = oops.New("Không thể gửi email")
+	ErrMailUpdateHistoryFailed = oops.New("Không thể cập nhật lịch sử email")
+	ErrMailParseFailed         = oops.New("Không thể phân tích dữ liệu payload")
 )
 
 type EmailSystemImpl interface {
@@ -45,9 +45,9 @@ type EmailTesting struct {
 
 type EmailSystem struct {
 	configTest   EmailTesting
-	log          loggerI.Log
+	log          log.Logger
 	mailProvider mail.MailProvider
-	mailTemplate mailtpl.MailTemplate
+	mailTemplate mail.MailTemplate
 	mailService  MailService
 }
 
@@ -62,7 +62,7 @@ func (e *EmailSystem) SendMailQueue(ctx context.Context, payload []byte, Id stri
 	if err := json.Unmarshal(payload, &pl); err != nil {
 		sh.Message = ErrMailParseFailed.Error() + ": " + err.Error()
 		e.mailService.CreateStatusHistory(ctx, sh)
-		e.log.Warn(sh.Message)
+		e.log.Error(err.Error())
 		return ErrMailParseFailed
 	}
 	tpl, err := e.mailService.GetMailTemplateById(ctx, pl.TemplateId)
@@ -143,8 +143,8 @@ func (e *EmailSystem) ConfigTest() EmailTestingImpl {
 }
 
 func NewEmailSystem(
-	log loggerI.Log,
-	mailtemplate mailtpl.MailTemplate,
+	log log.Logger,
+	mailtemplate mail.MailTemplate,
 	mailProvider mail.MailProvider,
 	mailService MailService,
 	testMails []string,

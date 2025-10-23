@@ -3,29 +3,42 @@ package main
 import (
 	"context"
 	"queue-service/bootstrap"
-	"queue-service/infrastructure/discovery"
-	grpcservice "queue-service/infrastructure/discovery/grpc_service"
 	"queue-service/infrastructure/grpc_client"
 	"queue-service/infrastructure/handler_mail"
-	logger "queue-service/infrastructure/service/logger"
 
+	grpc_service "github.com/anhvanhoa/service-core/bootstrap/grpc"
+	"google.golang.org/grpc"
+
+	"github.com/anhvanhoa/service-core/domain/discovery"
+	gc "github.com/anhvanhoa/service-core/domain/grpc_client"
+	"github.com/anhvanhoa/service-core/domain/log"
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap/zapcore"
 )
 
 func main() {
 	var env = bootstrap.Env{}
+	logConfig := log.NewConfig()
+	log := log.InitLogGRPC(logConfig, zapcore.DebugLevel, env.IsProduction())
 	bootstrap.NewEnv(&env)
-	logConfig := logger.NewConfig()
-	log := logger.InitLogger(logConfig, zapcore.DebugLevel, env.IsProduction())
 
-	discovery, err := discovery.NewDiscovery(log, &env)
+	discoveryConfig := &discovery.DiscoveryConfig{
+		ServiceName:   env.NameService,
+		ServicePort:   env.PortGrpc,
+		ServiceHost:   env.HostGrpc,
+		IntervalCheck: env.IntervalCheck,
+		TimeoutCheck:  env.TimeoutCheck,
+	}
+
+	discovery, err := discovery.NewDiscovery(discoveryConfig)
 	if err != nil {
 		log.Fatal("Không thể khởi động discovery: " + err.Error())
 	}
-	discovery.Register(env.NameService)
-	clientFactory := grpc_client.NewClientFactory(log, env.GrpcClients)
+	discovery.Register()
+
+	clientFactory := gc.NewClientFactory(env.GrpcClients...)
 	mailService := grpc_client.NewMailService(clientFactory.GetClient(env.MailServiceAddr))
+
 	cf := asynq.Config{
 		Concurrency: env.Queue.Concurrency,
 		Queues:      env.Queue.Queues,
@@ -41,9 +54,13 @@ func main() {
 	)
 	mux := asynq.NewServeMux()
 	handler_mail.NewEmailHandler(mux, &env, log, mailService)
-
+	config := &grpc_service.GRPCServerConfig{
+		IsProduction: env.IsProduction(),
+		PortGRPC:     env.PortGrpc,
+		NameService:  env.NameService,
+	}
 	go func() {
-		grpcSrv := grpcservice.NewGRPCServer(&env, log)
+		grpcSrv := grpc_service.NewGRPCServer(config, log, func(server *grpc.Server) {})
 		if err := grpcSrv.Start(context.Background()); err != nil {
 			log.Fatal("Không thể khởi động gRPC server: " + err.Error())
 		}

@@ -20,7 +20,7 @@ dev-create-db:
 	docker exec -it postgres_container createdb -U postgres userservice_db
 
 build:
-	go build -o app cmd/main.go
+	go build -o bin/app cmd/main.go
 
 run:
 	go run cmd/main.go

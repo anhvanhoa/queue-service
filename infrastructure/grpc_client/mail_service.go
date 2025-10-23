@@ -2,10 +2,12 @@ package grpc_client
 
 import (
 	"context"
-	"queue-service/domain/common"
 	"queue-service/domain/usecase"
 	"time"
 
+	gc "github.com/anhvanhoa/service-core/domain/grpc_client"
+
+	"github.com/anhvanhoa/service-core/common"
 	proto_mail_history "github.com/anhvanhoa/sf-proto/gen/mail_history/v1"
 	proto_mail_provider "github.com/anhvanhoa/sf-proto/gen/mail_provider/v1"
 	proto_mail_template "github.com/anhvanhoa/sf-proto/gen/mail_tmpl/v1"
@@ -13,18 +15,21 @@ import (
 )
 
 type MailService struct {
-	client *Client
+	client *gc.Client
 	shc    proto_status_history.StatusHistoryServiceClient
 	mtc    proto_mail_template.MailTmplServiceClient
 	mpc    proto_mail_provider.MailProviderServiceClient
 	mhc    proto_mail_history.MailHistoryServiceClient
 }
 
-func NewMailService(client *Client) usecase.MailService {
-	shsc := proto_status_history.NewStatusHistoryServiceClient(client.conn)
-	mtc := proto_mail_template.NewMailTmplServiceClient(client.conn)
-	mpc := proto_mail_provider.NewMailProviderServiceClient(client.conn)
-	mhc := proto_mail_history.NewMailHistoryServiceClient(client.conn)
+func NewMailService(client *gc.Client) usecase.MailService {
+	if client == nil {
+		return &MailService{}
+	}
+	shsc := proto_status_history.NewStatusHistoryServiceClient(client.GetConnection())
+	mtc := proto_mail_template.NewMailTmplServiceClient(client.GetConnection())
+	mpc := proto_mail_provider.NewMailProviderServiceClient(client.GetConnection())
+	mhc := proto_mail_history.NewMailHistoryServiceClient(client.GetConnection())
 	return &MailService{
 		client: client,
 		shc:    shsc,
@@ -55,9 +60,9 @@ func (m *MailService) GetMailTemplateById(ctx context.Context, id string) (*usec
 		return nil, err
 	}
 	return &usecase.MailTemplate{
-		Id: res.MailTmpl.Id,
-		// Name:          res.MailTmpl.Name,
-		// Keys:          res.MailTmpl.Keys,
+		Id:            res.MailTmpl.Id,
+		Name:          res.MailTmpl.Name,
+		Keys:          res.MailTmpl.Keys,
 		Subject:       res.MailTmpl.Subject,
 		Body:          res.MailTmpl.Body,
 		ProviderEmail: res.MailTmpl.ProviderEmail,

@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"context"
-	"queue-service/domain/common"
 	"time"
+
+	"github.com/anhvanhoa/service-core/common"
 )
 
 type StatusHistory struct {
