@@ -40,6 +40,9 @@ func NewMailService(client *gc.Client) usecase.MailService {
 }
 
 func (m *MailService) CreateStatusHistory(ctx context.Context, statusHistory *usecase.StatusHistory) error {
+	if err := m.validateShClient(); err != nil {
+		return err
+	}
 	_, err := m.shc.CreateStatusHistory(ctx, &proto_status_history.CreateStatusHistoryRequest{
 		Status:        statusHistory.Status,
 		MailHistoryId: statusHistory.MailHistoryId,
@@ -53,6 +56,9 @@ func (m *MailService) CreateStatusHistory(ctx context.Context, statusHistory *us
 }
 
 func (m *MailService) GetMailTemplateById(ctx context.Context, id string) (*usecase.MailTemplate, error) {
+	if err := m.validateMtcClient(); err != nil {
+		return nil, err
+	}
 	res, err := m.mtc.GetMailTmpl(ctx, &proto_mail_template.GetMailTmplRequest{
 		Id: id,
 	})
@@ -71,6 +77,9 @@ func (m *MailService) GetMailTemplateById(ctx context.Context, id string) (*usec
 }
 
 func (m *MailService) GetMailProviderByEmail(ctx context.Context, email string) (*usecase.MailProvider, error) {
+	if err := m.validateMpcClient(); err != nil {
+		return nil, err
+	}
 	res, err := m.mpc.GetMailProvider(ctx, &proto_mail_provider.GetMailProviderRequest{
 		Email: email,
 	})
@@ -102,6 +111,9 @@ func (m *MailService) GetMailProviderByEmail(ctx context.Context, email string) 
 }
 
 func (m *MailService) UpdateMailHistoryById(ctx context.Context, id string, mailHistory *usecase.MailHistory) error {
+	if err := m.validateMhcClient(); err != nil {
+		return err
+	}
 	_, err := m.mhc.UpdateMailHistory(ctx, &proto_mail_history.UpdateMailHistoryRequest{
 		Id:            id,
 		Subject:       mailHistory.Subject,
@@ -113,6 +125,31 @@ func (m *MailService) UpdateMailHistoryById(ctx context.Context, id string, mail
 	})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (m *MailService) validateShClient() error {
+	if m.shc == nil {
+		return ErrStatusHistoryClientNil
+	}
+	return nil
+}
+func (m *MailService) validateMtcClient() error {
+	if m.mtc == nil {
+		return ErrMailTemplateClientNil
+	}
+	return nil
+}
+func (m *MailService) validateMpcClient() error {
+	if m.mpc == nil {
+		return ErrMailProviderClientNil
+	}
+	return nil
+}
+func (m *MailService) validateMhcClient() error {
+	if m.mhc == nil {
+		return ErrMailHistoryClientNil
 	}
 	return nil
 }
