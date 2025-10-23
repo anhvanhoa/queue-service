@@ -47,7 +47,7 @@ type MailHistory struct {
 	Subject       string
 	Body          string
 	Tos           []string
-	Data          map[string]string
+	Data          string
 	EmailProvider string
 	CreatedBy     string
 	CreatedAt     time.Time
