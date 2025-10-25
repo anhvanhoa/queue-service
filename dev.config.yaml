@@ -1,6 +1,6 @@
 node_env: 'development'
 name_service: 'QueueService'
-port_grpc: 50054
+port_grpc: 40065
 host_grpc: 'localhost'
 interval_check: '20s'
 timeout_check: '15s'

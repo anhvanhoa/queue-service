@@ -8,7 +8,7 @@ services:
     image: queue-service:latest
     container_name: queue-service_app
     ports:
-      - "50065:50065"
+      - "40065:40065"
     networks:
       - sf_network
     environment:
@@ -25,7 +25,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:50065/health",
+          "http://localhost:40065/health",
         ]
       interval: 30s
       timeout: 10s
