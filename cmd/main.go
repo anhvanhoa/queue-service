@@ -9,7 +9,6 @@ import (
 	grpc_service "github.com/anhvanhoa/service-core/bootstrap/grpc"
 	"google.golang.org/grpc"
 
-	"github.com/anhvanhoa/service-core/domain/discovery"
 	gc "github.com/anhvanhoa/service-core/domain/grpc_client"
 	"github.com/anhvanhoa/service-core/domain/log"
 	"github.com/hibiken/asynq"
@@ -21,21 +20,6 @@ func main() {
 	logConfig := log.NewConfig()
 	log := log.InitLogGRPC(logConfig, zapcore.DebugLevel, env.IsProduction())
 	bootstrap.NewEnv(&env)
-
-	discoveryConfig := &discovery.DiscoveryConfig{
-		ServiceName:   env.NameService,
-		ServicePort:   env.PortGrpc,
-		ServiceHost:   env.HostGrpc,
-		IntervalCheck: env.IntervalCheck,
-		TimeoutCheck:  env.TimeoutCheck,
-	}
-
-	discovery, err := discovery.NewDiscovery(discoveryConfig)
-	if err != nil {
-		log.Fatal("Không thể khởi động discovery: " + err.Error())
-	}
-	discovery.Register()
-
 	clientFactory := gc.NewClientFactory(env.GrpcClients...)
 	mailService := grpc_client.NewMailService(clientFactory.GetClient(env.MailServiceAddr))
 

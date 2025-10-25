@@ -1,14 +1,10 @@
 package bootstrap
 
 import (
-	"log"
-	"os"
-	"path/filepath"
 	"strings"
 
+	"github.com/anhvanhoa/service-core/bootstrap/config"
 	"github.com/anhvanhoa/service-core/domain/grpc_client"
-
-	"github.com/spf13/viper"
 )
 
 type queue struct {
@@ -35,29 +31,15 @@ type Env struct {
 	GrpcClients     []*grpc_client.ConfigGrpc `mapstructure:"grpc_clients"`
 }
 
-func NewEnv(env *Env) {
-	absPath, err := filepath.Abs("./")
-	if err != nil {
-		log.Fatal("Lỗi khi lấy đường dẫn tuyệt đối:", err)
-	}
-
-	mode := os.Getenv("ENV_MODE")
-	viper.SetConfigType("yaml")
-	if mode == "production" {
-		viper.SetConfigName("prod.config")
+func NewEnv(env any) {
+	setting := config.DefaultSettingsConfig()
+	if setting.IsProduction() {
+		setting.SetPath("/config")
+		setting.SetFile("queue_service.config")
 	} else {
-		viper.SetConfigName("dev.config")
+		setting.SetFile("dev.config")
 	}
-	viper.AddConfigPath(absPath)
-	err = viper.ReadInConfig()
-	if err != nil {
-		panic("Lỗi khi đọc file cấu hình, " + err.Error())
-	}
-
-	err = viper.UnmarshalExact(env)
-	if err != nil {
-		panic("Lỗi khi phân tích file cấu hình, " + err.Error())
-	}
+	config.NewConfig(setting, env)
 }
 
 func (env *Env) IsProduction() bool {

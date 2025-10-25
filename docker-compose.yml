@@ -1,0 +1,41 @@
+services:
+  queue-service:
+    build:
+      context: .
+      dockerfile: DockerFile
+      secrets:
+        - github_token
+    image: queue-service:latest
+    container_name: queue-service_app
+    ports:
+      - "50065:50065"
+    networks:
+      - sf_network
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - CONFIG_FILE=${CONFIG_FILE}
+    volumes:
+      - ${CONFIG_FILE}:/config/${CONFIG_FILE}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:50065/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+secrets:
+  github_token:
+    file: ./github_token.txt
+
+networks:
+  sf_network:
+    external: true

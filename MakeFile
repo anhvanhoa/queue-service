@@ -24,3 +24,6 @@ build:
 
 run:
 	go run cmd/main.go
+
+docker-build: ## Build the application and run it in the container
+	export NODE_ENV=${NODE_ENV} CONFIG_FILE=${CONFIG_FILE} && docker compose up -d --build
