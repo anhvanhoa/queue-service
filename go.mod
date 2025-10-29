@@ -3,8 +3,8 @@ module queue-service
 go 1.24.6
 
 require (
-	github.com/anhvanhoa/service-core v0.0.0-20251023075654-c76f3d51ba68
-	github.com/anhvanhoa/sf-proto v0.0.0-20251021093736-e2719d3e1c04
+	github.com/anhvanhoa/service-core v0.0.0-20251029071648-439f705ec130
+	github.com/anhvanhoa/sf-proto v0.0.0-20251029045801-09ef1c1e3959
 	github.com/hibiken/asynq v0.25.1
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.76.0
@@ -33,6 +33,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/google/cel-go v0.26.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2 // indirect
